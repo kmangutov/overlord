@@ -6,13 +6,8 @@ import sys
 from functools import wraps
 from crontab import CronTab
 
-# Setup logging
-logging.basicConfig(filename='/path/to/pipeline_error.log',
-                    level=logging.ERROR,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 step_functions = []
-
 def step(cron_schedule=None):
     """Decorator to log errors, handle exceptions, and optionally set a cron schedule."""
     def decorator(func):
@@ -21,8 +16,6 @@ def step(cron_schedule=None):
         def wrapper(*args, **kwargs):
             try:
                 result = func(*args, **kwargs)
-                if cron_schedule:
-                    print(f"Step '{func.__name__}' has a cron schedule: {cron_schedule}")
                 return result
             except Exception as e:
                 logging.error(f"Error in step '{func.__name__}': {e}")
@@ -34,20 +27,10 @@ class DAG:
     """Class to represent a Directed Acyclic Graph of steps."""
     def __init__(self):
         self.steps = []
-        self.current_step = None
-    
+
     def __lshift__(self, func):
-        """Chain functions with << operator, passing the result of one to the next."""
-        if self.current_step is None:
-            self.current_step = func
-            self.steps.append(func)
-        else:
-            prev_step = self.current_step
-            def wrapper(*args, **kwargs):
-                result = prev_step(*args, **kwargs)
-                return func(result)
-            self.current_step = wrapper
-            self.steps.append(wrapper)
+        """Chain functions with << operator."""
+        self.steps.append(func)
         return self
 
     def run(self):
@@ -55,12 +38,12 @@ class DAG:
         if not self.steps:
             raise ValueError("No steps to run in the DAG.")
         
-        data = None
+        result = None
         for step_func in self.steps:
-            if data is None:
-                data = step_func()
+            if result is None:
+                result = step_func()
             else:
-                data = step_func(data)
+                result = step_func(result)
 
 def list_steps():
     """List all steps annotated with @step."""
@@ -98,7 +81,7 @@ def list_cronjobs():
     for job in cron:
         print(f"{job.scheduled_time()} - {job.command}")
 
-def run_cli(cronfile, logfile):
+def run_cli():
     """Command-line interface for running the pipeline."""
     parser = argparse.ArgumentParser(description="Pipeline CLI")
     parser.add_argument('--file', required=True, help="Path to the pipeline file")
@@ -121,7 +104,7 @@ def run_cli(cronfile, logfile):
     if args.list_steps:
         list_steps()
     if args.check_errors:
-        check_errors(logfile)
+        check_errors('test.txt')
     if args.setup_cron:
         # If a cron_schedule is provided in the pipeline file, set up the cron job
         cron_schedule = getattr(pipeline_module, 'cron_schedule', None)
@@ -133,4 +116,11 @@ def run_cli(cronfile, logfile):
         list_cronjobs()
 
 if __name__ == "__main__":
-    run_cli('/path/to/pipeline_cronjob', '/path/to/pipeline_error.log')
+    # run_cli()
+
+    spec = importlib.util.spec_from_file_location("pipeline_module", "./src/my_pipeline.py")
+    pipeline_module = importlib.util.module_from_spec(spec)
+    sys.modules["pipeline_module"] = pipeline_module
+    spec.loader.exec_module(pipeline_module)
+
+    pipeline_module.dag.run()
