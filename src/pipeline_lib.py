@@ -5,7 +5,11 @@ import importlib.util
 import sys
 from functools import wraps
 from crontab import CronTab
+import pickle
 
+def snapshot_state(filename, **kwargs):
+    with open(f"snapshots/{filename}.pkl", "wb") as f:
+        pickle.dump(kwargs, f)
 
 def step(cron_schedule=None):
     """Decorator to log errors, handle exceptions, and optionally set a cron schedule."""
@@ -14,7 +18,11 @@ def step(cron_schedule=None):
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
+                print(f"{func.__name__} input: {args} {kwargs}")
+                snapshot_state(func.__name__ + "_input", *args, **kwargs)
                 result = func(*args, **kwargs)
+                print(f"{func.__name__} output: {result}")
+                snapshot_state(func.__name__ + "_output", *args, **kwargs)
                 return result
             except Exception as e:
                 logging.error(f"Error in step '{func.__name__}': {e}")

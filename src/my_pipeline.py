@@ -19,7 +19,7 @@ tmp_output = 'tmp_output.csv'
 def fetch_data_yahoo():
     # Define the stock ticker and date range
     ticker = "GOOG"
-    start_date = "2023-08-14"  # One year ago from today
+    start_date = "2024-07-14"  # One year ago from today
     end_date = "2024-08-14"    # Today
     # Convert dates to UNIX timestamps
     start_timestamp = int(time.mktime(datetime.strptime(start_date, "%Y-%m-%d").timetuple()))
