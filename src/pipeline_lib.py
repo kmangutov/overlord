@@ -112,11 +112,19 @@ def run_cli():
     """Command-line interface for running the pipeline."""
     parser = argparse.ArgumentParser(description="Pipeline CLI")
     parser.add_argument('--file', required=True, help="Path to the pipeline file")
+
+    # Execution
     parser.add_argument('--run', action='store_true', help="Run the pipeline")
-    parser.add_argument('--check-errors', action='store_true', help="Check for errors in the log")
+    parser.add_argument('--debug', action='store_true', help="Rerun last failing snapshot")
+
+    # Scheduling
     parser.add_argument('--setup-cron', action='store_true', help="Set up the cron job for this pipeline")
     parser.add_argument('--list-cron', action='store_true', help="List all cron jobs")
+
+    # Debugging
+    parser.add_argument('--check-errors', action='store_true', help="Check for errors in the log")
     parser.add_argument('--snapshot', action='store_true', help="Save inputs and outputs")
+
 
     # Override default args
     args = parser.parse_args()
