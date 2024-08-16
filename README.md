@@ -2,9 +2,12 @@
 
 Human-first task execution, scheduling, and monitoring.
 
-# Example
+## Example
 
- # Run the pipeline at the start of every hour
+```
+from pipeline_lib import step, DAG
+
+# Run the pipeline at the start of every hour
 @step(cron_schedule= "0 * * * *")
 def fetch_data(source="yahoo"):
     data = requests.get("...")
@@ -22,12 +25,15 @@ def save_data(**kwargs):
 
 dag = DAG()
 dag << fetch_data << transform_data << save_data
+```
 
-# CLI
+## CLI
+```
+python3 pipeline_lib.py --file path/to/pipeline.py [options]
 
---file my_pipeline.py
 --run
 --debug: Rerun the last failing snapshot
 --setup-cron: Set up a cron job for this pipeline
 --list-cron: List all cron jobs for this pipeline
 --check-errors: Check for errors in the log
+```
