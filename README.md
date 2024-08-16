@@ -1,6 +1,6 @@
 # Evolving Data Pipelines (Overlord)
 
-Human-first task execution, scheduling, and monitoring.
+Human-first pipeline execution, scheduling, and debugging.
 
 ## Example
 
