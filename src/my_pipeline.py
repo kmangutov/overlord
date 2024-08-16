@@ -47,13 +47,13 @@ def fetch_data(source="yahoo"):
     return data
 
 @step()
-def transform_data(df_input):
+def transform_data(**kwargs):
     """Transform data using DuckDB."""
     print('transforming...')
     return 2
 
 @step()
-def save_data(df_merged):
+def save_data(**kwargs):
     print('save')
     return 3
 

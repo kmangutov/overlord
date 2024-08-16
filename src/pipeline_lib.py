@@ -7,9 +7,22 @@ from functools import wraps
 from crontab import CronTab
 import pickle
 
+class DefaultArgs:
+    def __init__(self):
+        self.snapshot = True
+        self.run = True
+        self.check_errors = False
+        self.setup_cron = False
+        self.list_cron = False
+## args =  DefaultArgs()
+
+# TODO: So we should be saving snapshots for each run but only write them if there is an exception at any point
+# The exception name should be in the filename, and if necessary a counter appended for multiple eceptions
 def snapshot_state(filename, **kwargs):
-    with open(f"snapshots/{filename}.pkl", "wb") as f:
-        pickle.dump(kwargs, f)
+    # TODO: Snapshot a substring or random sample instead of entire dataframe
+    timestamp = datetime.datetime.now().strftime("%y%m%d%H%M%S")
+    with open(f"snapshots/{filename}_{timestamp}.pkl", "wb") as f:
+        pickle.dump(obj=kwargs, file=f)
 
 def step(cron_schedule=None):
     """Decorator to log errors, handle exceptions, and optionally set a cron schedule."""
@@ -19,10 +32,12 @@ def step(cron_schedule=None):
         def wrapper(*args, **kwargs):
             try:
                 print(f"{func.__name__} input: {args} {kwargs}")
-                snapshot_state(func.__name__ + "_input", *args, **kwargs)
-                result = func(*args, **kwargs)
+                if save_snapshots:
+                    snapshot_state(func.__name__ + "_input", kwargs=kwargs)
+                result = func(**kwargs)
                 print(f"{func.__name__} output: {result}")
-                snapshot_state(func.__name__ + "_output", *args, **kwargs)
+                if save_snapshots:
+                    snapshot_state(func.__name__ + "_output", **kwargs)
                 return result
             except Exception as e:
                 logging.error(f"Error in step '{func.__name__}': {e}")
@@ -91,6 +106,8 @@ def load_pipeline(pipeline_file):
     return pipeline_module
 
 
+# TODO: TUI to render pipeline steps (name, inputs, and outputs)
+# and to render scheduled or currently running cron jobs
 def run_cli():
     """Command-line interface for running the pipeline."""
     parser = argparse.ArgumentParser(description="Pipeline CLI")
@@ -99,12 +116,18 @@ def run_cli():
     parser.add_argument('--check-errors', action='store_true', help="Check for errors in the log")
     parser.add_argument('--setup-cron', action='store_true', help="Set up the cron job for this pipeline")
     parser.add_argument('--list-cron', action='store_true', help="List all cron jobs")
+    parser.add_argument('--snapshot', action='store_true', help="Save inputs and outputs")
 
+    # Override default args
     args = parser.parse_args()
-
     pipeline_module =   load_pipeline(args.file)
 
+    # pipeline_module = load_pipeline("./src/my_pipeline.py")
+   
+
     if args.run:
+        global save_snapshots
+        save_snapshots = args.snapshot
         pipeline_module.dag.run()
     if args.check_errors:
         check_errors('test.txt')
