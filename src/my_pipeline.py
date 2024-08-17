@@ -2,7 +2,7 @@ import pandas as pd
 # import duckdb
 import requests
 import os
-from pipeline_lib import step, DAG
+from pipeline_lib import step, DAG, sqlite
 import requests
 import time
 from datetime import datetime
@@ -19,7 +19,7 @@ tmp_output = 'tmp_output.csv'
 def fetch_data_yahoo():
     # Define the stock ticker and date range
     ticker = "GOOG"
-    start_date = "2024-07-14"  # One year ago from today
+    start_date = "2024-08-10"  # One year ago from today
     end_date = "2024-08-14"    # Today
     # Convert dates to UNIX timestamps
     start_timestamp = int(time.mktime(datetime.strptime(start_date, "%Y-%m-%d").timetuple()))
@@ -48,13 +48,16 @@ def fetch_data(source="yahoo"):
 
 @step()
 def transform_data(**kwargs):
+    print(f'transform_data input: {str(kwargs)}')
     """Transform data using DuckDB."""
     print('transforming...')
     return 2
 
 @step()
-def save_data(**kwargs):
+@sqlite('data.db')
+def save_data(conn, **kwargs):
     print('save')
+    print(str(conn ))
     return 3
 
 # Create a DAG

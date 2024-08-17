@@ -6,6 +6,7 @@ import sys
 from functools import wraps
 from crontab import CronTab
 import pickle
+import sqlite3
 
 class DefaultArgs:
     def __init__(self):
@@ -15,6 +16,7 @@ class DefaultArgs:
         self.setup_cron = False
         self.list_cron = False
 ## args =  DefaultArgs()
+save_snapshots = False
 
 # TODO: So we should be saving snapshots for each run but only write them if there is an exception at any point
 # The exception name should be in the filename, and if necessary a counter appended for multiple eceptions
@@ -44,6 +46,24 @@ def step(cron_schedule=None):
                 raise
         return wrapper
     return decorator
+
+
+def sqlite(file_path):
+    """Decorator to inject a SQLite connection."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            conn = sqlite3.connect(file_path)
+            try:
+                # Inject the connection into the kwargs
+                kwargs['conn'] = conn
+                result = func(*args, **kwargs)
+            finally:
+                conn.close()
+            return result
+        return wrapper
+    return decorator
+
 
 class DAG:
     """Class to represent a Directed Acyclic Graph of steps."""
