@@ -7,6 +7,7 @@ from functools import wraps
 from crontab import CronTab
 import pickle
 import sqlite3
+import datetime
 
 # TODO:
 # passing return value to next step parameter needs to work
@@ -29,6 +30,8 @@ def snapshot_state(filename, **kwargs) -> None:
     # TODO: Snapshot a substring or random sample instead of entire dataframe
     timestamp = datetime.datetime.now().strftime("%y%m%d%H%M%S")
     with open(f"snapshots/{filename}_{timestamp}.pkl", "wb") as f:
+
+        if 'conn' in kwargs: del kwargs['conn']
         pickle.dump(obj=kwargs, file=f)
 
 def step():
