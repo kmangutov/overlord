@@ -81,7 +81,7 @@ def sqlite_connection(file_path: str, table_schema: Optional[Dict[str, str]] = N
     finally:
         conn.close()
 
-def step(name: Optional[str] = None):
+def step(debug=False):
     """
     Decorator to log errors, handle exceptions, and optionally set a cron schedule.
 
@@ -103,7 +103,8 @@ def step(name: Optional[str] = None):
                 return result
             except Exception as e:
                 logging.error(f"Error in step '{step_name}': {e}")
-                snapshot_state(f"{step_name}_{type(e).__name__}", state={'input': (args, kwargs), 'exception': e})
+                if not debug:
+                    snapshot_state(f"{step_name}_{type(e).__name__}", state={'step_name': step_name,'input': (args, kwargs), 'exception': e})
                 raise
         return wrapper
     return decorator
@@ -137,6 +138,8 @@ def setup_cronjob(cron_schedule: str, pipeline_file: str) -> None:
     cron.write()
     logging.info(f"Cron job set up: {command} at schedule '{cron_schedule}'")
 
+
+
 def load_pipeline(pipeline_file: str) -> Any:
     """
     Dynamically import the domain-specific pipeline file.
@@ -153,6 +156,37 @@ def load_pipeline(pipeline_file: str) -> Any:
     spec.loader.exec_module(pipeline_module)
     return pipeline_module
 
+
+def debug_step(snapshot_file: str, pipeline_module):
+    """
+    Load a snapshot from the specified file and re-execute the step function with the stored input parameters.
+
+    Args:
+        snapshot_file (str): Path to the snapshot file.
+    """
+    with open(snapshot_file, 'rb') as f:
+        state = pickle.load(f)
+    
+    print(f'pickle.load state: {state}')
+
+    func_name = state['step_name']
+    input = state['input']
+    # Dynamically retrieve the function from the loaded pipeline module
+    func = getattr(pipeline_module, func_name, None)
+    
+    if func is None:
+        raise ValueError(f"Function '{func_name}' not found in the current scope.")
+    
+    # Execute the function with the stored parameters
+    try:
+        result = func(input[0][0], debug=True) # Unholy 
+        print(f"Debug result: {result}")
+    except Exception as e:
+        print(f"Debug failed: {e}")
+
+
+
+
 def main(args: argparse.Namespace) -> None:
     """
     Main function to handle CLI arguments and run the pipeline.
@@ -161,6 +195,13 @@ def main(args: argparse.Namespace) -> None:
         args (argparse.Namespace): Parsed command-line arguments.
     """
     pipeline_module = load_pipeline(args.file)
+
+
+    if args.debug:
+        if os.path.exists(args.debug):
+            debug_step(args.debug, pipeline_module=pipeline_module)
+        else:
+            print(f"Snapshot file {args.debug} not found.")
 
     if args.run:
         pipeline_module.pipeline.run()
@@ -178,6 +219,8 @@ def run_cli() -> None:
     parser = argparse.ArgumentParser(description="Pipeline CLI")
     parser.add_argument('--file', required=True, help="Path to the pipeline file")
     parser.add_argument('--run', action='store_true', help="Run the pipeline")
+    parser.add_argument("--debug", type=str, help="Specify the snapshot file to debug.")
+   
     parser.add_argument('--enable', action='store_true', help="Set up the cron job for this pipeline")
     parser.add_argument('--disable', action='store_true', help="Remove cron job for this pipeline")
 

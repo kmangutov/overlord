@@ -46,7 +46,7 @@ def fetch_data():
     return data
 
 @step()
-def transform_data(data):
+def transform_data(data, **kwargs):
     print(f'transform_data input: {str(data)}')
 
     df = pd.read_csv(StringIO(data))
@@ -54,6 +54,7 @@ def transform_data(data):
     # Add a column for 2-day moving average of the 'Close' prices
     df['Signal_MA'] = df['Close'].rolling(window=2).mean()
     df = df.dropna()
+
     return df
 
 def sql_insert(cursor, data):
@@ -68,8 +69,9 @@ def sql_count(cursor):
     row_count = cursor.fetchone()[0]
     return row_count
 
+# Biggest TODO right now: But nothing stateful e.g. sql write should work in debug mode!!!
 @step()
-def save_data(data):
+def save_data(data, **kwargs):
     with sqlite_connection('data.db', table_schema=SCHEMA_CANDLES) as conn:
         cursor = conn.cursor()
         sql_insert(cursor, data)
@@ -82,7 +84,7 @@ def save_data(data):
 # Create a PipelineConfig
 pipeline_config = PipelineConfig(
     steps=[
-        StepConfig(func=fetch_data),  # TODO: Can't we infer name from the function name? ast should be able to parse the function docstring etc
+        StepConfig(func=fetch_data),
         StepConfig(func=transform_data),
         StepConfig(func=save_data),
     ],
