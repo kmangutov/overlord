@@ -70,6 +70,7 @@ def sql_count(cursor):
     return row_count
 
 # Biggest TODO right now: But nothing stateful e.g. sql write should work in debug mode!!!
+# There should be a @stateful annotation? maybe that would mock the conn? Idk
 @step()
 def save_data(data, **kwargs):
     with sqlite_connection('data.db', table_schema=SCHEMA_CANDLES) as conn:

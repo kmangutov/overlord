@@ -104,6 +104,7 @@ def step(debug=False):
             except Exception as e:
                 logging.error(f"Error in step '{step_name}': {e}")
                 if not debug:
+                    # TODO: The pipeline name should also be in the file...
                     snapshot_state(f"{step_name}_{type(e).__name__}", state={'step_name': step_name,'input': (args, kwargs), 'exception': e})
                 raise
         return wrapper
