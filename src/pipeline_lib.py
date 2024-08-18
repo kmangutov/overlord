@@ -169,6 +169,7 @@ def run_cli():
         check_errors('test.txt')
     if args.setup_cron:
         # If a cron_schedule is provided in the pipeline file, set up the cron job
+        # TODO: cron_schedule should come as a member of DAG
         cron_schedule = getattr(pipeline_module, 'cron_schedule', None)
         if cron_schedule:
             setup_cronjob(cron_schedule, args.file)
