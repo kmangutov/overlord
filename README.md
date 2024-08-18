@@ -35,7 +35,7 @@ SCHEMA_CANDLES = {
 
 @step()
 @sqlite(db_name="data.db", table_schema=SCHEMA_CANDLES)
-def save_data(data, **kwargs):
+def save_data(cursor, data, **kwargs):
     sql_insert(cursor, data)
     count = sql_count(cursor)
     print(f'Rows in data.db: {count}')
