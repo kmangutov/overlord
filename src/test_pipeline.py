@@ -78,6 +78,7 @@ def test_exception_handling_with_input(mock_snapshot_state):
     mock_snapshot_state.assert_called_with(
         'step2_ZeroDivisionError',
         state={
+            'step_name': 'step2',
             'input': ((0,), {}),
             'exception': mock.ANY
         }

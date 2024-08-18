@@ -3,7 +3,7 @@ from pipeline_lib import step, Pipeline, PipelineConfig, StepConfig, sqlite_conn
 
 @step()
 def step1():
-    return 5
+    return 0
 
 @step()
 def step2(input_data, **kwargs):
@@ -19,7 +19,7 @@ pipeline_config = PipelineConfig(
         StepConfig(func=step1),
         StepConfig(func=step2),
         StepConfig(func=step3),
-    ]
+    ],
 )
 
 # Create a pipeline
