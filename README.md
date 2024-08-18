@@ -1,40 +1,63 @@
-# Evolving Data Pipelines (Overlord)
+# Evolving Data Pipelines
 
-Human-first pipeline execution, scheduling, and debugging.
+Tiny data pipelines optimized for debugability
 
 ## Example
 
 ```
-from pipeline_lib import step, DAG
+SCHEMA_CANDLES = {
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "Close": "REAL",
+    "Signal_MA": "REAL",
+}
 
-# Run the pipeline at the start of every hour
-@step(cron_schedule= "0 * * * *")
-def fetch_data(source="yahoo"):
-    data = requests.get("...")
-    return data
-
-# If an Exception is raised, the step parameters are saved as a test case
-@step()
-def transform_data(**kwargs):
-    data.dropna()
-    return data
 
 @step()
-def save_data(**kwargs):
-    duckdb.save()
+def fetch_data():
+    """Fetch data from an API or CSV file."""
+    print("Fetching data...")
+    data = requests.get(url)
+    return data
+
+@step()
+def transform_data(data, **kwargs):
+    df = pd.read_csv(StringIO(data))
+    df = df.dropna()
+    return df
+
+@step()
+def save_data(data, **kwargs):
+    with sqlite_connection('data.db', table_schema=SCHEMA_CANDLES) as conn:
+        cursor = conn.cursor()
+        sql_insert(cursor, data)
+        count = sql_count(cursor)
+        print(f'Rows in data.db: {count}')
+        conn.commit()
+
+    return count
 
 
-dag = DAG()
-dag << fetch_data << transform_data << save_data
+pipeline_config = PipelineConfig(
+    steps=[
+        StepConfig(func=fetch_data),
+        StepConfig(func=transform_data),
+        StepConfig(func=save_data),
+    ],
+    schedule="0 * * * *"  # This will run the pipeline at the start of every hour 
+)
+
+
+pipeline = Pipeline(pipeline_config)
+
 ```
 
 ## CLI
 ```
 python3 pipeline_lib.py --file path/to/pipeline.py [options]
 
---run
---debug: Rerun the last failing snapshot
---setup-cron: Set up a cron job for this pipeline
---list-cron: List all cron jobs for this pipeline
---check-errors: Check for errors in the log
+--run: Run pipeline
+--debug [snapshot.pkl]: Rerun a failed step snapshot
+
+--enable: WIP add to system cron
+--disable: WIP remove from system cron
 ```
