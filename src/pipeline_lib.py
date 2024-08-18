@@ -94,18 +94,19 @@ def step(name: Optional[str] = None):
         def wrapper(*args, **kwargs):
             try:
                 logging.info(f"{step_name} input: {args} {kwargs}")
-                snapshot_state(f"{step_name}_input", *args, **kwargs)
                 result = func(*args, **kwargs)
                 logging.info(f"{step_name} output: {result}")
-                snapshot_state(f"{step_name}_output", result=result, **kwargs)
                 return result
             except Exception as e:
                 logging.error(f"Error in step '{step_name}': {e}")
+                snapshot_state(f"{step_name}_{type(e).__name__}", state={'input': (args, kwargs), 'exception': e})
                 raise
         return wrapper
     return decorator
 
-def snapshot_state(filename: str, *args, **kwargs) -> None:
+
+# TODO: The file name should be the name of the step and any exceptions or stacktraces
+def snapshot_state(filename: str, state: dict) -> None:
     """
     Save a snapshot of the current state.
 
@@ -114,9 +115,8 @@ def snapshot_state(filename: str, *args, **kwargs) -> None:
         *args: Positional arguments to save.
         **kwargs: Keyword arguments to save.
     """
-    safe_kwargs = {k: (str(v) if isinstance(v, sqlite3.Connection) else v) for k, v in kwargs.items()}
     with open(f"snapshots/{filename}.pkl", "wb") as f:
-        pickle.dump({'args': args, 'kwargs': safe_kwargs}, f)
+        pickle.dump(state, f)
 
 def setup_cronjob(cron_schedule: str, pipeline_file: str) -> None:
     """
