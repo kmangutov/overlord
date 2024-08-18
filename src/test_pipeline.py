@@ -1,5 +1,5 @@
 import pytest
-from pipeline_lib import Pipeline, step
+from pipeline_lib import Pipeline, PipelineConfig, StepConfig, step
 
 # Define test steps
 @step()
@@ -9,14 +9,18 @@ def step1():
 @step()
 def step2(input_data):
     return f"{input_data}, World!"
-    
 
 def test_pipeline_execution():
-    # Create a pipeline
-    pipeline = Pipeline()
+    # Create a pipeline configuration
+    pipeline_config = PipelineConfig(
+        steps=[
+            StepConfig(func=step1, name="Step 1"),
+            StepConfig(func=step2, name="Step 2"),
+        ]
+    )
     
-    # Add steps to the pipeline
-    pipeline << step1 << step2
+    # Create a pipeline
+    pipeline = Pipeline(pipeline_config)
     
     # Run the pipeline
     result = pipeline.run()
@@ -24,10 +28,9 @@ def test_pipeline_execution():
     # Check if the final result is correct
     assert result == "Hello, World!"
 
-
 def test_pipeline_empty():
     # Create an empty pipeline
-    pipeline = Pipeline()
+    pipeline = Pipeline(PipelineConfig(steps=[]))
     
     # Attempt to run the empty pipeline
     with pytest.raises(ValueError, match="No steps to run in the Pipeline."):
