@@ -2,9 +2,15 @@
 
 Tiny data pipelines optimized for debugability
 
+```
+@step() annotation: catch exceptions and save a snapshot of the input
+pipeline_lib.py: CLI for running, debugging, or scheduling pipelines
+```
+
 ## Example
 
-```
+```from pipeline_lib import step, Pipeline, PipelineConfig, StepConfig, sqlite
+
 @step()
 def fetch_data():
     """Fetch data from an API or CSV file."""
@@ -47,7 +53,7 @@ pipeline_config = PipelineConfig(
 
 
 pipeline = Pipeline(pipeline_config)
-
+# python3 src/pipeline_lib.py --file src/my_pipeline.py --run
 ```
 
 ## CLI
