@@ -55,27 +55,36 @@ class Pipeline:
             result = step.func(result) if result is not None else step.func()
         return result
 
-@contextlib.contextmanager
-def sqlite_connection(file_path: str, table_schema: Optional[Dict[str, str]] = None):
+
+def sqlite(db_name: str, table_schema: Optional[Dict[str, str]] = None):
     """
-    Context manager for SQLite connections.
+    Decorator to manage SQLite connection and schema setup.
 
     Args:
-        file_path (str): Path to the SQLite database file.
+        db_name (str): Name of the SQLite database file.
         table_schema (Optional[Dict[str, str]]): Schema for table creation.
 
-    Yields:
-        sqlite3.Connection: The SQLite connection.
+    Returns:
+        Callable: The decorated function.
     """
-    conn = sqlite3.connect(file_path)
-    try:
-        if table_schema:
-            columns = ", ".join([f"{col} {typ}" for col, typ in table_schema.items()])
-            create_table_sql = f"CREATE TABLE IF NOT EXISTS candles ({columns});"
-            conn.execute(create_table_sql)
-        yield conn
-    finally:
-        conn.close()
+    def decorator(func: Callable):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            conn = sqlite3.connect(db_name)
+            try:
+                if table_schema:
+                    columns = ", ".join([f"{col} {typ}" for col, typ in table_schema.items()])
+                    create_table_sql = f"CREATE TABLE IF NOT EXISTS candles ({columns});"
+                    conn.execute(create_table_sql)
+                cursor = conn.cursor()
+                result = func(cursor, *args, **kwargs)
+                conn.commit()
+                return result
+            finally:
+                conn.close()
+        return wrapper
+    return decorator
+
 
 def step(debug=False):
     """

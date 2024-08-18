@@ -8,7 +8,7 @@ import requests
 import time
 from datetime import datetime
 from io import StringIO
-from pipeline_lib import step, Pipeline, PipelineConfig, StepConfig, sqlite_connection
+from pipeline_lib import step, Pipeline, PipelineConfig, StepConfig, sqlite
 
 SCHEMA_CANDLES = {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
@@ -79,15 +79,11 @@ def sql_count(cursor):
 # Biggest TODO right now: But nothing stateful e.g. sql write should work in debug mode!!!
 # There should be a @stateful annotation? maybe that would mock the conn? Idk
 @step()
-def save_data(data, **kwargs):
-    # TODO: conn should come from a @sqlite annotation
-    with sqlite_connection('data.db', table_schema=SCHEMA_CANDLES) as conn:
-        cursor = conn.cursor()
-        sql_insert(cursor, data)
-        count = sql_count(cursor)
-        print(f'Rows in data.db: {count}')
-        conn.commit()
-
+@sqlite(db_name="data.db", table_schema=SCHEMA_CANDLES)
+def save_data(cursor, data, **kwargs):
+    sql_insert(cursor, data)
+    count = sql_count(cursor)
+    print(f'Rows in data.db: {count}')
     return count
 
 # Create a PipelineConfig

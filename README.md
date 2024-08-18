@@ -5,6 +5,21 @@ Tiny data pipelines optimized for debugability
 ## Example
 
 ```
+@step()
+def fetch_data():
+    """Fetch data from an API or CSV file."""
+    print("Fetching data...")
+    data = requests.get(url)
+    return data
+
+
+@step()
+def transform_data(data, **kwargs):
+    df = pd.read_csv(StringIO(data))
+    df = df.dropna()
+    return df
+
+
 SCHEMA_CANDLES = {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
     "Close": "REAL",
@@ -13,27 +28,11 @@ SCHEMA_CANDLES = {
 
 
 @step()
-def fetch_data():
-    """Fetch data from an API or CSV file."""
-    print("Fetching data...")
-    data = requests.get(url)
-    return data
-
-@step()
-def transform_data(data, **kwargs):
-    df = pd.read_csv(StringIO(data))
-    df = df.dropna()
-    return df
-
-@step()
+@sqlite(db_name="data.db", table_schema=SCHEMA_CANDLES)
 def save_data(data, **kwargs):
-    with sqlite_connection('data.db', table_schema=SCHEMA_CANDLES) as conn:
-        cursor = conn.cursor()
-        sql_insert(cursor, data)
-        count = sql_count(cursor)
-        print(f'Rows in data.db: {count}')
-        conn.commit()
-
+    sql_insert(cursor, data)
+    count = sql_count(cursor)
+    print(f'Rows in data.db: {count}')
     return count
 
 
