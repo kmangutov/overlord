@@ -32,6 +32,7 @@ def snapshot_state(filename, **kwargs) -> None:
     with open(f"snapshots/{filename}_{timestamp}.pkl", "wb") as f:
 
         if 'conn' in kwargs: del kwargs['conn']
+
         pickle.dump(obj=kwargs, file=f)
 
 def step():
@@ -81,6 +82,7 @@ class Pipeline:
                 result = step_func()
             else:
                 result = step_func(result)
+        return result
 
 
 def sql_schema(cursor, schema):
@@ -127,28 +129,7 @@ def load_pipeline(pipeline_file):
     return pipeline_module
 
 
-# TODO: TUI to render pipeline steps (name, inputs, and outputs)
-# and to render scheduled or currently running cron jobs
-def run_cli():
-    """Command-line interface for running the pipeline."""
-    parser = argparse.ArgumentParser(description="Pipeline CLI")
-    parser.add_argument('--file', required=True, help="Path to the pipeline file")
-
-    # Execution
-    parser.add_argument('--run', action='store_true', help="Run the pipeline")
-    parser.add_argument('--debug', action='store_true', help="Rerun last failing snapshot")
-
-    # Scheduling
-    parser.add_argument('--enable', action='store_true', help="Set up the cron job for this pipeline")
-    parser.add_argument('--disable', action='store_true', help="Remove cron job for this pipeline")
-
-    # Debugging
-    parser.add_argument('--snapshot', action='store_true', help="Run pipeline and save inputs and outputs")
-
-
-    # Override default args
-    args = parser.parse_args()
-
+def main(args):
     global save_snapshots
     save_snapshots = args.snapshot
 
@@ -174,6 +155,31 @@ def run_cli():
     if args.disable:
         # TODO
         pass
+
+
+# TODO: TUI to render pipeline steps (name, inputs, and outputs)
+# and to render scheduled or currently running cron jobs
+def run_cli():
+    """Command-line interface for running the pipeline."""
+    parser = argparse.ArgumentParser(description="Pipeline CLI")
+    parser.add_argument('--file', required=True, help="Path to the pipeline file")
+
+    # Execution
+    parser.add_argument('--run', action='store_true', help="Run the pipeline")
+    parser.add_argument('--debug', action='store_true', help="Rerun last failing snapshot")
+
+    # Scheduling
+    parser.add_argument('--enable', action='store_true', help="Set up the cron job for this pipeline")
+    parser.add_argument('--disable', action='store_true', help="Remove cron job for this pipeline")
+
+    # Debugging
+    parser.add_argument('--snapshot', action='store_true', help="Run pipeline and save inputs and outputs")
+
+
+    # Override default args
+    args = parser.parse_args()
+    main(args)
+ 
 
 
 if __name__ == "__main__":
