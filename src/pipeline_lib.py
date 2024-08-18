@@ -8,6 +8,11 @@ from crontab import CronTab
 import pickle
 import sqlite3
 
+# TODO:
+# passing return value to next step parameter needs to work
+# make the adding to cron and removing and pritnging existing crons work
+# the cron should prboably go into a DAG member instead of task
+
 class DefaultArgs:
     def __init__(self):
         self.snapshot = True
@@ -36,7 +41,7 @@ def step(cron_schedule=None):
                 print(f"{func.__name__} input: {args} {kwargs}")
                 if save_snapshots:
                     snapshot_state(func.__name__ + "_input", kwargs=kwargs)
-                result = func(**kwargs)
+                result = func(*args, **kwargs)
                 print(f"{func.__name__} output: {result}")
                 if save_snapshots:
                     snapshot_state(func.__name__ + "_output", **kwargs)
@@ -47,22 +52,6 @@ def step(cron_schedule=None):
         return wrapper
     return decorator
 
-
-def sqlite(file_path):
-    """Decorator to inject a SQLite connection."""
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            conn = sqlite3.connect(file_path)
-            try:
-                # Inject the connection into the kwargs
-                kwargs['conn'] = conn
-                result = func(*args, **kwargs)
-            finally:
-                conn.close()
-            return result
-        return wrapper
-    return decorator
 
 
 class DAG:
@@ -82,10 +71,29 @@ class DAG:
         
         result = None
         for step_func in self.steps:
+            print(f'DAG::run result {result}')
             if result is None:
                 result = step_func()
             else:
                 result = step_func(result)
+
+
+def sqlite(file_path):
+    """Decorator to inject a SQLite connection."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            conn = sqlite3.connect(file_path)
+            try:
+                # Inject the connection into the kwargs
+                kwargs['conn'] = conn
+                result = func(*args, **kwargs)
+            finally:
+                conn.close()
+            return result
+        return wrapper
+    return decorator
+
 
 def check_errors(logfile):
     """Check the log file for any errors."""
