@@ -13,6 +13,7 @@ def fetch_data(source="yahoo"):
     data = requests.get("...")
     return data
 
+# If an Exception is raised, the step parameters are saved as a test case
 @step()
 def transform_data(**kwargs):
     data.dropna()
