@@ -1,8 +1,14 @@
+"""
+python3 src/pipeline_lib.py --file src/my_debug_pipeline.py --run
+python3 src/pipeline_lib.py --file src/my_debug_pipeline.py --debug snapshots/step2_ZeroDivisionError.pkl
+"""
+
 from pipeline_lib import step, Pipeline, PipelineConfig, StepConfig, sqlite_connection
 
 
 @step()
 def step1():
+    # Imagine this data comes from an API
     return 0
 
 @step()

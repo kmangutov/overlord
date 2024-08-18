@@ -13,10 +13,6 @@ from typing import Callable, List, Optional, Dict, Any
 import contextlib
 
 
-# Rerun failing step with parameter
-# Add pipeline to system cron command
-
-
 @dataclass
 class StepConfig:
     """Configuration for a pipeline step."""

@@ -1,3 +1,8 @@
+"""
+python3 src/pipeline_lib.py --file src/my_pipeline.py --run
+python3 src/pipeline_lib.py --file src/my_pipeline.py --debug [snapshot.pkl]
+"""
+
 import pandas as pd
 import requests
 import time
@@ -55,6 +60,8 @@ def transform_data(data, **kwargs):
     df['Signal_MA'] = df['Close'].rolling(window=2).mean()
     df = df.dropna()
 
+    # die = 1 / 0
+
     return df
 
 def sql_insert(cursor, data):
@@ -73,6 +80,7 @@ def sql_count(cursor):
 # There should be a @stateful annotation? maybe that would mock the conn? Idk
 @step()
 def save_data(data, **kwargs):
+    # TODO: conn should come from a @sqlite annotation
     with sqlite_connection('data.db', table_schema=SCHEMA_CANDLES) as conn:
         cursor = conn.cursor()
         sql_insert(cursor, data)
@@ -94,7 +102,3 @@ pipeline_config = PipelineConfig(
 
 # Create a Pipeline
 pipeline = Pipeline(pipeline_config)
-
-if __name__ == "__main__":
-    result = pipeline.run()
-    print(f"Pipeline completed. Final result: {result}")

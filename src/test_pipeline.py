@@ -53,6 +53,7 @@ def test_exception_handling_with_input(mock_snapshot_state):
     
     @step()
     def step1():
+        # Imagine this data comes from an API
         return 0
     
     @step()
