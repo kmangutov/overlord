@@ -16,7 +16,6 @@ import contextlib
 class StepConfig:
     """Configuration for a pipeline step."""
     func: Callable
-    name: str
 
 @dataclass
 class PipelineConfig:
@@ -51,7 +50,7 @@ class Pipeline:
         
         result = None
         for step in self.config.steps:
-            logging.info(f'Pipeline::run step: {step.name}, previous result: {result}')
+            print(f'Pipeline::run step: {step.func.__name__}')
             result = step.func(result) if result is not None else step.func()
         return result
 
@@ -89,7 +88,7 @@ def step(name: Optional[str] = None):
     """
     # TODO: optional timeout parameter
     def decorator(func: Callable) -> Callable:
-        step_name = name or func.__name__
+        step_name = func.__name__
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:

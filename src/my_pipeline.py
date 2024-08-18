@@ -76,14 +76,15 @@ def save_data(data):
         count = sql_count(cursor)
         print(f'Rows in data.db: {count}')
         conn.commit()
+
     return count
 
 # Create a PipelineConfig
 pipeline_config = PipelineConfig(
     steps=[
-        StepConfig(func=fetch_data, name="Fetch Data"),  # TODO: Can't we infer name from the function name? ast should be able to parse the function docstring etc
-        StepConfig(func=transform_data, name="Transform Data"),
-        StepConfig(func=save_data, name="Save Data"),
+        StepConfig(func=fetch_data),  # TODO: Can't we infer name from the function name? ast should be able to parse the function docstring etc
+        StepConfig(func=transform_data),
+        StepConfig(func=save_data),
     ],
     schedule=CRON_HOURLY
 )
