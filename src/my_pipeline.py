@@ -53,11 +53,38 @@ def transform_data(**kwargs):
     print('transforming...')
     return 2
 
-@step()
+
 @sqlite('data.db')
+@step()
 def save_data(conn, **kwargs):
     print('save')
-    print(str(conn ))
+
+    default_schema = {
+        "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "Date": "TEXT",  # or "DATE"
+        "Open": "REAL",
+        "High": "REAL",
+        "Low": "REAL",
+        "Close": "REAL",
+        "Adj_Close": "REAL",
+        "Volume": "INTEGER"
+    }
+
+    # Create table if it doesn't exist
+    cursor = conn.cursor()
+    columns = ", ".join([f"{col} {typ}" for col, typ in default_schema.items()])
+    create_table_sql = f"CREATE TABLE IF NOT EXISTS candles ({columns});"
+    cursor.execute(create_table_sql)
+    conn.commit()
+
+
+    # Insert dummy data
+    dummy_data = ('2024-08-12', 165.994995, 166.699997, 163.550003, 163.949997, 163.949997, 12435000)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO candles (Date, Open, High, Low, Close, Adj_Close, Volume) VALUES (?, ?, ?, ?, ?, ?, ?)", dummy_data)
+    conn.commit()
+    
+    print(f"Inserted dummy data: {dummy_data}")
     return 3
 
 # Create a DAG

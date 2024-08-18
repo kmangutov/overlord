@@ -20,7 +20,7 @@ save_snapshots = False
 
 # TODO: So we should be saving snapshots for each run but only write them if there is an exception at any point
 # The exception name should be in the filename, and if necessary a counter appended for multiple eceptions
-def snapshot_state(filename, **kwargs):
+def snapshot_state(filename, **kwargs) -> None:
     # TODO: Snapshot a substring or random sample instead of entire dataframe
     timestamp = datetime.datetime.now().strftime("%y%m%d%H%M%S")
     with open(f"snapshots/{filename}_{timestamp}.pkl", "wb") as f:
@@ -101,7 +101,7 @@ def check_errors(logfile):
     else:
         print("Log file not found.")
 
-def setup_cronjob(cron_schedule, pipeline_file):
+def setup_cronjob(cron_schedule, pipeline_file) -> None:
     """Set up the cron job for the pipeline."""
     cron = CronTab(user=True)
     command = f"python {pipeline_file} --run" # TODO fix
