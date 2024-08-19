@@ -1,3 +1,7 @@
+"""
+WIP Utility to summarize codebases for LLM prompts
+"""
+
 import ast
 
 class FunctionDocstringAnalyzer(ast.NodeVisitor):

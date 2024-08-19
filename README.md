@@ -36,7 +36,7 @@ SCHEMA_CANDLES = {
 @step()
 @sqlite(db_name="data.db", table_schema=SCHEMA_CANDLES)
 def save_data(cursor, data, **kwargs):
-    sql_insert(cursor, data)
+    sql_insert(cursor, data)  # Steps must be idempotent
     count = sql_count(cursor)
     print(f'Rows in data.db: {count}')
     return count
@@ -66,3 +66,13 @@ python3 pipeline_lib.py --file path/to/pipeline.py [options]
 --enable: WIP add to system cron
 --disable: WIP remove from system cron
 ```
+## Run tests
+```
+pytest src/test_pipeline.py  
+```
+
+## Follow ups
+- How to make snapshotting work with unpickleable fields
+- Implement --enable and --disable CLI flags for managing system cron
+- Store pipeline history in a sqlite db in user home dir
+- Terminal UI for showing pipeline history

@@ -1,4 +1,6 @@
 """
+Example pipeline to extract Yahoo finance data, transform, and load into sqlite.
+
 python3 src/pipeline_lib.py --file examples/my_pipeline.py --run
 python3 src/pipeline_lib.py --file examples/my_pipeline.py --debug [snapshot.pkl]
 """
@@ -22,8 +24,6 @@ SCHEMA_CANDLES = {
     "Signal_MA": "REAL",
 }
 
-# Define cron schedule (e.g., run every hour)
-CRON_HOURLY = "0 * * * *"  # This will run the pipeline at the start of every hour
 
 def fetch_data_yahoo():
     # Define the stock ticker and date range
@@ -79,15 +79,17 @@ def sql_count(cursor):
     row_count = cursor.fetchone()[0]
     return row_count
 
-# Biggest TODO right now: But nothing stateful e.g. sql write should work in debug mode!!!
-# There should be a @stateful annotation? maybe that would mock the conn? Idk
+
 @step()
 @sqlite(db_name="data.db", table_schema=SCHEMA_CANDLES)
 def save_data(cursor, data, **kwargs):
-    sql_insert(cursor, data)
+    sql_insert(cursor, data)  # TODO: Steps need to be idempotent though or have a mock db
     count = sql_count(cursor)
     print(f'Rows in data.db: {count}')
     return count
+
+
+CRON_HOURLY = "0 * * * *"  # This will run the pipeline at the start of every hour
 
 # Create a PipelineConfig
 pipeline_config = PipelineConfig(
