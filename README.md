@@ -53,7 +53,7 @@ pipeline_config = PipelineConfig(
 
 
 pipeline = Pipeline(pipeline_config)
-# python3 src/pipeline_lib.py --file src/my_pipeline.py --run
+# python3 src/pipeline_lib.py --file examples/my_pipeline.py --run
 ```
 
 ## CLI

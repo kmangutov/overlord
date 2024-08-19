@@ -1,9 +1,9 @@
 """
-python3 src/pipeline_lib.py --file src/my_debug_pipeline.py --run
-python3 src/pipeline_lib.py --file src/my_debug_pipeline.py --debug snapshots/step2_ZeroDivisionError.pkl
+python3 src/pipeline_lib.py --file examples/my_debug_pipeline.py --run
+python3 src/pipeline_lib.py --file examples/my_debug_pipeline.py --debug snapshots/step2_ZeroDivisionError.pkl
 """
 
-from pipeline_lib import step, Pipeline, PipelineConfig, StepConfig, sqlite_connection
+from pipeline_lib import step, Pipeline, PipelineConfig, StepConfig
 
 
 @step()

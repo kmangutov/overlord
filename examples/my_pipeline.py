@@ -1,6 +1,6 @@
 """
-python3 src/pipeline_lib.py --file src/my_pipeline.py --run
-python3 src/pipeline_lib.py --file src/my_pipeline.py --debug [snapshot.pkl]
+python3 src/pipeline_lib.py --file examples/my_pipeline.py --run
+python3 src/pipeline_lib.py --file examples/my_pipeline.py --debug [snapshot.pkl]
 """
 
 import pandas as pd
@@ -48,6 +48,9 @@ def fetch_data():
     print("Fetching data...")
     data = fetch_data_yahoo()
     print(str(data))
+
+    # TODO: Snapshot saving wont work if there is no input right now
+
     return data
 
 @step()
