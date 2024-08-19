@@ -7,6 +7,10 @@ Tiny data pipelines optimized for debugability. Lightweight [Airflow](https://ai
 pipeline_lib.py: CLI for running, debugging, or scheduling pipelines
 ```
 
+## Motivation
+
+Debuggable Data Pipelines is a scaffolding framework for Extract Transform Load (ETL) pipelines that prioritizes individual developers.
+
 ## Example
 
 ```
