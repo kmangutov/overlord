@@ -1,6 +1,6 @@
 # Debuggable Data Pipelines
 
-Tiny data pipelines optimized for debugability
+Tiny data pipelines optimized for debugability. Lightweight [Airflow](https://airflow.apache.org/) or [Prefect](https://www.prefect.io/) alternative. 
 
 ```
 @step() annotation: catch exceptions and save a snapshot of the input
