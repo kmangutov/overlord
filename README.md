@@ -1,4 +1,4 @@
-# Evolving Data Pipelines
+# Debuggable Data Pipelines
 
 Tiny data pipelines optimized for debugability
 
