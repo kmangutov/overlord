@@ -9,7 +9,8 @@ pipeline_lib.py: CLI for running, debugging, or scheduling pipelines
 
 ## Example
 
-```from pipeline_lib import step, Pipeline, PipelineConfig, StepConfig, sqlite
+```
+from pipeline_lib import step, Pipeline, PipelineConfig, StepConfig, sqlite
 
 @step()
 def fetch_data():
